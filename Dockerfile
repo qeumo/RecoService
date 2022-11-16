@@ -1,4 +1,4 @@
-FROM python:3.8-buster as build
+FROM python:3.9-buster as build
 
 COPY . .
 
@@ -8,7 +8,7 @@ RUN pip install -U --no-cache-dir pip poetry setuptools wheel && \
     pip wheel -w dist -r requirements.txt
 
 
-FROM python:3.8-slim-buster as runtime
+FROM python:3.9-slim-buster as runtime
 
 WORKDIR /usr/src/app
 
