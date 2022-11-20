@@ -1,9 +1,10 @@
 from typing import List
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request
 from pydantic import BaseModel
 
 from service.api.exceptions import UserNotFoundError
+from service.auth_bearer import JWTBearer
 from service.log import app_logger
 
 
@@ -27,6 +28,7 @@ async def health() -> str:
     path="/reco/{model_name}/{user_id}",
     tags=["Recommendations"],
     response_model=RecoResponse,
+    dependencies=[Depends(JWTBearer())]
 )
 async def get_reco(
     request: Request,
