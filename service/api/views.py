@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, FastAPI, Request
 from pydantic import BaseModel
 
-from service.api.exceptions import UserNotFoundError
+from service.api.exceptions import ModelNotFoundError, UserNotFoundError
 from service.auth_bearer import JWTBearer
 from service.log import app_logger
 
@@ -14,6 +14,7 @@ class RecoResponse(BaseModel):
 
 
 router = APIRouter()
+available_models = ["recsys_model"]
 
 
 @router.get(
@@ -28,6 +29,11 @@ async def health() -> str:
     path="/reco/{model_name}/{user_id}",
     tags=["Recommendations"],
     response_model=RecoResponse,
+    responses={
+        404: {
+            "description": "Model not found"
+        }
+    },
     dependencies=[Depends(JWTBearer())]
 )
 async def get_reco(
@@ -39,8 +45,11 @@ async def get_reco(
 
     # Write your code here
 
-    if user_id > 10**9:
+    if user_id > 10 ** 9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
+
+    if model_name not in available_models:
+        raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
     k_recs = request.app.state.k_recs
     reco = list(range(k_recs))
