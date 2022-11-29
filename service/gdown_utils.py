@@ -1,7 +1,7 @@
 import requests
 
 
-def download_file_from_google_drive(file_id, destination):
+def download_file_from_google_drive(file_id: str, destination: str) -> None:
     url = "https://docs.google.com/uc?export=download&confirm=t"
 
     session = requests.Session()
@@ -16,18 +16,19 @@ def download_file_from_google_drive(file_id, destination):
     save_response_content(response, destination)
 
 
-def get_confirm_token(response):
+def get_confirm_token(response) -> str:
     for key, value in response.cookies.items():
         if key.startswith('download_warning'):
             return value
 
-    return None
+    return ''
 
 
-def save_response_content(response, destination):
-    CHUNK_SIZE = 32768
+def save_response_content(response: requests.models.Response,
+                          destination: str) -> None:
+    chunk_size = 32768
 
     with open(destination, "wb") as f:
-        for chunk in response.iter_content(CHUNK_SIZE):
+        for chunk in response.iter_content(chunk_size):
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
