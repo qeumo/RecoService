@@ -1,9 +1,13 @@
+import os.path
+import pickle
 from typing import List
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request
 from pydantic import BaseModel
 
-from service.api.exceptions import UserNotFoundError
+from service.api.exceptions import ModelNotFoundError, UserNotFoundError
+from service.auth_bearer import JWTBearer
+from service.gdown_utils import download_file_from_google_drive
 from service.log import app_logger
 
 
@@ -13,6 +17,19 @@ class RecoResponse(BaseModel):
 
 
 router = APIRouter()
+available_models = ["recsys_model"]
+
+model_filename = 'model.sav'
+dataset_filename = 'dataset.sav'
+if not os.path.exists(model_filename):
+    download_file_from_google_drive('1-FOStMxn6Z-VA22xE70aeLa0noWZEfIq',
+                                    model_filename)
+if not os.path.exists(dataset_filename):
+    download_file_from_google_drive('1HCALVMCHKVPekBPq8_8HXW6oubM5Kgjv',
+                                    dataset_filename)
+
+model = pickle.load(open(model_filename, 'rb'))
+dataset = pickle.load(open(dataset_filename, 'rb'))
 
 
 @router.get(
@@ -27,6 +44,15 @@ async def health() -> str:
     path="/reco/{model_name}/{user_id}",
     tags=["Recommendations"],
     response_model=RecoResponse,
+    responses={
+        404: {
+            "description": "Model not found"
+        },
+        401: {
+            "description": "Not authenticated"
+        }
+    },
+    dependencies=[Depends(JWTBearer())]
 )
 async def get_reco(
     request: Request,
@@ -37,12 +63,20 @@ async def get_reco(
 
     # Write your code here
 
-    if user_id > 10**9:
+    if user_id > 10 ** 9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
+    if model_name not in available_models:
+        raise ModelNotFoundError(error_message=f"Model {model_name} not found")
+
     k_recs = request.app.state.k_recs
-    reco = list(range(k_recs))
-    return RecoResponse(user_id=user_id, items=reco)
+    recs = model.recommend(
+        [user_id],
+        dataset=dataset,
+        k=k_recs,
+        filter_viewed=False
+    )['item_id'].values.tolist()
+    return RecoResponse(user_id=user_id, items=recs)
 
 
 def add_views(app: FastAPI) -> None:
