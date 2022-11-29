@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 
 from starlette.testclient import TestClient
@@ -5,10 +6,7 @@ from starlette.testclient import TestClient
 from service.settings import ServiceConfig
 
 GET_RECO_PATH = "/reco/{model_name}/{user_id}"
-TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" \
-        ".eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIi" \
-        "LCJpYXQiOjE2Njg4NjExNTQsImV4cCI6MTcwM" \
-        "DM5NzE1NCwiYXVkIjo"
+TOKEN = os.environ["JWT_TOKEN"]
 
 
 def test_health(
