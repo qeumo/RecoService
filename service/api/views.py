@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 from service.api.exceptions import ModelNotFoundError, UserNotFoundError
 from service.auth_bearer import JWTBearer
-from service.gdown_utils import download_file_from_google_drive
 from service.log import app_logger
 
 
@@ -17,19 +16,6 @@ class RecoResponse(BaseModel):
 
 
 router = APIRouter()
-available_models = ["recsys_model"]
-
-model_filename = 'model.sav'
-dataset_filename = 'dataset.sav'
-if not os.path.exists(model_filename):
-    download_file_from_google_drive('1-FOStMxn6Z-VA22xE70aeLa0noWZEfIq',
-                                    model_filename)
-if not os.path.exists(dataset_filename):
-    download_file_from_google_drive('1HCALVMCHKVPekBPq8_8HXW6oubM5Kgjv',
-                                    dataset_filename)
-
-model = pickle.load(open(model_filename, 'rb'))
-dataset = pickle.load(open(dataset_filename, 'rb'))
 
 
 @router.get(
@@ -66,16 +52,12 @@ async def get_reco(
     if user_id > 10 ** 9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
-    if model_name not in available_models:
+    if model_name not in request.app.state.models:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
     k_recs = request.app.state.k_recs
-    recs = model.recommend(
-        [user_id],
-        dataset=dataset,
-        k=k_recs,
-        filter_viewed=False
-    )['item_id'].values.tolist()
+    model = request.app.state.models[model_name]
+    recs = model.recommend(user_id, k_recs)
     return RecoResponse(user_id=user_id, items=recs)
 
 

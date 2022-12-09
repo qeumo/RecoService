@@ -1,3 +1,4 @@
+import os
 import requests
 
 
@@ -28,6 +29,7 @@ def save_response_content(response: requests.models.Response,
                           destination: str) -> None:
     chunk_size = 32768
 
+    os.makedirs(os.path.dirname(destination), exist_ok=True)
     with open(destination, "wb") as f:
         for chunk in response.iter_content(chunk_size):
             if chunk:  # filter out keep-alive new chunks
