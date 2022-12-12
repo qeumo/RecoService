@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from pydantic import BaseModel
-from qdrant_client import QdrantClient
 
 from service.api.exceptions import ModelNotFoundError, UserNotFoundError
 from service.auth_bearer import JWTBearer
