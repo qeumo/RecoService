@@ -1,4 +1,5 @@
 import pickle
+
 from main import config
 from service.db.ann_index import AnnIndex
 
