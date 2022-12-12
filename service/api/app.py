@@ -53,9 +53,9 @@ def create_app(config: ServiceConfig) -> FastAPI:
     app = FastAPI(debug=False)
     app.state.k_recs = config.k_recs
     app.state.db_collection_name = config.db_collection_name
-    app.user_dataset = user_dataset
-    app.cold_reco = cold_reco
-    app.ann_index = AnnIndex(ann_index_ip=config.ann_index_ip)
+    app.state.user_dataset = user_dataset
+    app.state.cold_reco = cold_reco
+    app.state.ann_index = AnnIndex(ann_index_ip=config.ann_index_ip)
 
     add_views(app)
     add_middlewares(app)

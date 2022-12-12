@@ -15,7 +15,7 @@ class RecoResponse(BaseModel):
 
 
 router = APIRouter()
-router.qdrant_client = QdrantClient(host="api", port=6333)
+router.state.qdrant_client = QdrantClient(host="api", port=6333)
 available_models = ["recsys_model", "ann_model"]
 
 
@@ -57,14 +57,14 @@ async def get_reco(
 
     k_recs = request.app.state.k_recs
     db_collection_name = request.app.state.db_collection_name
-    ann_index = request.app.ann_index
-    cold_reco = request.app.cold_reco
+    ann_index = request.app.state.ann_index
+    cold_reco = request.app.state.cold_reco
     app_logger.info(cold_reco)
 
     try:
         hits = ann_index.client.search(
             collection_name=db_collection_name,
-            query_vector=request.app.user_dataset.loc[user_id],
+            query_vector=request.app.state.user_dataset.loc[user_id],
             query_filter=None,
             append_payload=True,
             with_vectors=False,
