@@ -1,6 +1,3 @@
-import os.path
-import pickle
-import traceback
 from typing import List
 
 from fastapi import APIRouter, Depends, FastAPI, Request
@@ -9,7 +6,6 @@ from qdrant_client import QdrantClient
 
 from service.api.exceptions import ModelNotFoundError, UserNotFoundError
 from service.auth_bearer import JWTBearer
-from service.gdown_utils import download_file_from_google_drive
 from service.log import app_logger
 
 
