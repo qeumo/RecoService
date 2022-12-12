@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Union
 
 from fastapi import FastAPI, Request
@@ -32,7 +33,7 @@ async def http_error_handler(
     app_logger.error(str(exc))
     error = Error(error_key="http_exception", error_message=exc.detail)
     if error.error_message == "Not authenticated":
-        raise NotAuthenticatedError()
+        create_response(status_code=HTTPStatus.UNAUTHORIZED, errors=[error])
     return create_response(status_code=exc.status_code, errors=[error])
 
 
