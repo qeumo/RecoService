@@ -25,7 +25,7 @@ def test_get_reco_no_auth(
     path = GET_RECO_PATH.format(model_name=model_name, user_id=user_id)
     with client:
         response = client.get(path)
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_get_reco_success(
