@@ -15,7 +15,6 @@ class RecoResponse(BaseModel):
 
 
 router = APIRouter()
-router.state.qdrant_client = QdrantClient(host="api", port=6333)
 available_models = ["recsys_model", "ann_model"]
 
 
