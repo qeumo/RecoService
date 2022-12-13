@@ -5,18 +5,16 @@ from typing import Any, Dict
 import uvloop
 from fastapi import FastAPI
 
-from main import config
-
 from ..db.ann_index import AnnIndex
 from ..gdown_utils import gdrive_read
 from ..log import app_logger, setup_logging
-from ..settings import ServiceConfig
+from ..settings import ServiceConfig, get_config
 from .exception_handlers import add_exception_handlers
 from .middlewares import add_middlewares
 from .views import add_views
 
 __all__ = ("create_app",)
-
+config = get_config()
 user_dataset = gdrive_read(config.user_dataset_filename,
                            config.user_dataset_fileid)
 cold_reco = gdrive_read(config.cold_reco_filename,
