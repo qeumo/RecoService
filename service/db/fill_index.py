@@ -1,10 +1,9 @@
-import pickle
-
 from main import config
 from service.db.ann_index import AnnIndex
+from service.gdown_utils import gdrive_read
 
-item_dataset_filename = 'item_dataset.pkl'
-item_dataset = pickle.load(open(item_dataset_filename, 'rb'))
+item_dataset = gdrive_read(config.item_dataset_filename,
+                           config.item_dataset_fileid)
 
 ann_index = AnnIndex(ann_index_ip=config.ann_index_ip)
 ann_index.create_upload_col(vectors=item_dataset.to_numpy(),

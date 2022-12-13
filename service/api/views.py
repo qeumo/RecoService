@@ -69,7 +69,7 @@ async def get_reco(
             limit=k_recs
         )
         recs = [h.id for h in hits]
-    except Exception:
+    except KeyError:
         return RecoResponse(user_id=user_id, items=cold_reco)
 
     return RecoResponse(user_id=user_id, items=recs)

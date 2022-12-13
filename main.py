@@ -1,10 +1,8 @@
 import os
-import pickle
 
 import uvicorn
 
 from service.api.app import create_app
-from service.db.ann_index import AnnIndex
 from service.settings import get_config
 
 config = get_config()
