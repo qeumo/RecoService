@@ -19,7 +19,12 @@ ENV GUNICORN_WORKERS 2
 ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN pip install gdown && \
+COPY --from=build dist dist
+COPY --from=build main.py gunicorn.config.py service/db/fill_index.py ./
+
+RUN apt-get update && \
+    apt-get install libgomp1 && \
+    pip install gdown && \
     # .env
     gdown --id '16QLx6X60yixKstVFLEnwZBHxgjiThVxD' && \
     # cold_reco
@@ -27,14 +32,7 @@ RUN pip install gdown && \
     # item_dataset
     gdown --id '1pNBUY3SUJCOfwBbYQsGzpum-NwO5caaT' && \
     # user_dataset
-    gdown --id '1gMfP4iaSDK2cbXx--o4fuHWtc_s7Qswj'
-
-COPY --from=build dist dist
-COPY --from=build main.py gunicorn.config.py service/db/fill_index.py .env ./
-
-
-RUN apt-get update && \
-    apt-get install libgomp1 && \
+    gdown --id '1gMfP4iaSDK2cbXx--o4fuHWtc_s7Qswj' && \
     pip install -U --no-cache-dir pip dist/*.whl && \
     rm -rf dist
 

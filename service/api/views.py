@@ -60,9 +60,11 @@ async def get_reco(
     app_logger.info(cold_reco)
 
     try:
+        query_vector = request.app.state.user_dataset.loc[user_id]
+        query_vector = query_vector.to_list()
         hits = ann_index.client.search(
             collection_name=db_collection_name,
-            query_vector=request.app.state.user_dataset.loc[user_id],
+            query_vector=query_vector,
             query_filter=None,
             append_payload=True,
             with_vectors=False,
