@@ -1,6 +1,8 @@
 name: CICD
 on: [push]
 
+env:
+  JWT_TOKEN: ${{ secrets.JWT_TOKEN }}
 
 jobs:
   test:
@@ -15,6 +17,4 @@ jobs:
       - run: pip install poetry
       - run: make setup
       - run: make lint
-      - env:
-          JWT_TOKEN: ${{ secrets.JWT_TOKEN }}
       - run: make test

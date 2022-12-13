@@ -1,3 +1,7 @@
+import os
+import pickle
+from typing import Any
+
 import requests
 
 
@@ -32,3 +36,11 @@ def save_response_content(response: requests.models.Response,
         for chunk in response.iter_content(chunk_size):
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
+
+
+def gdrive_read(filename: str, gdrive_fileid: str) -> Any:
+    if not os.path.exists(filename):
+        download_file_from_google_drive(gdrive_fileid, filename)
+    with open(filename, 'rb') as fr:
+        file = pickle.load(fr)
+    return file

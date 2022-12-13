@@ -1,5 +1,3 @@
-import os.path
-import pickle
 from typing import List
 
 from fastapi import APIRouter, Depends, FastAPI, Request
@@ -7,7 +5,6 @@ from pydantic import BaseModel
 
 from service.api.exceptions import ModelNotFoundError, UserNotFoundError
 from service.auth_bearer import JWTBearer
-from service.gdown_utils import download_file_from_google_drive
 from service.log import app_logger
 
 
@@ -17,19 +14,7 @@ class RecoResponse(BaseModel):
 
 
 router = APIRouter()
-available_models = ["recsys_model"]
-
-model_filename = 'model.sav'
-dataset_filename = 'dataset.sav'
-if not os.path.exists(model_filename):
-    download_file_from_google_drive('1-FOStMxn6Z-VA22xE70aeLa0noWZEfIq',
-                                    model_filename)
-if not os.path.exists(dataset_filename):
-    download_file_from_google_drive('1HCALVMCHKVPekBPq8_8HXW6oubM5Kgjv',
-                                    dataset_filename)
-
-model = pickle.load(open(model_filename, 'rb'))
-dataset = pickle.load(open(dataset_filename, 'rb'))
+available_models = ["recsys_model", "ann_model"]
 
 
 @router.get(
@@ -61,21 +46,34 @@ async def get_reco(
 ) -> RecoResponse:
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
-    # Write your code here
-
-    if user_id > 10 ** 9:
+    if user_id > 1e9:
+        # return RecoResponse(user_id=user_id, items=list(range(10)))
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
     if model_name not in available_models:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
     k_recs = request.app.state.k_recs
-    recs = model.recommend(
-        [user_id],
-        dataset=dataset,
-        k=k_recs,
-        filter_viewed=False
-    )['item_id'].values.tolist()
+    db_collection_name = request.app.state.db_collection_name
+    ann_index = request.app.state.ann_index
+    cold_reco = request.app.state.cold_reco
+    app_logger.info(cold_reco)
+
+    try:
+        query_vector = request.app.state.user_dataset.loc[user_id]
+        query_vector = query_vector.to_list()
+        hits = ann_index.client.search(
+            collection_name=db_collection_name,
+            query_vector=query_vector,
+            query_filter=None,
+            append_payload=True,
+            with_vectors=False,
+            limit=k_recs
+        )
+        recs = [h.id for h in hits]
+    except KeyError:
+        return RecoResponse(user_id=user_id, items=cold_reco)
+
     return RecoResponse(user_id=user_id, items=recs)
 
 
