@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.conversions.common_types import CollectionInfo
@@ -10,9 +12,9 @@ class AnnIndex:
 
     def create_upload_col(self,
                           vectors: np.ndarray,
-                          ids: list,
+                          ids: List,
                           col_name: str,
-                          payload: list = None,
+                          payload: List = None,
                           upload_batch_size: int = 512,
                           distance: Distance = Distance.DOT) -> CollectionInfo:
         self.client.recreate_collection(collection_name=col_name,
